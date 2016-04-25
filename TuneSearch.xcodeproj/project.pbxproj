@@ -14,6 +14,7 @@
 		438C13E31CCE76F6005516A5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 438C13E21CCE76F6005516A5 /* Assets.xcassets */; };
 		438C13E61CCE76F6005516A5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438C13E41CCE76F6005516A5 /* LaunchScreen.storyboard */; };
 		438C13EF1CCE776B005516A5 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13EE1CCE776B005516A5 /* Reachability.m */; };
+		438C13F11CCE9921005516A5 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 438C13F01CCE9921005516A5 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		438C13E71CCE76F6005516A5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		438C13ED1CCE776B005516A5 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		438C13EE1CCE776B005516A5 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		438C13F01CCE9921005516A5 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				438C13F11CCE9921005516A5 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +48,7 @@
 		438C13CA1CCE76F6005516A5 = {
 			isa = PBXGroup;
 			children = (
+				438C13F01CCE9921005516A5 /* SystemConfiguration.framework */,
 				438C13D51CCE76F6005516A5 /* TuneSearch */,
 				438C13D41CCE76F6005516A5 /* Products */,
 			);

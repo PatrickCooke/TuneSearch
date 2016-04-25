@@ -15,6 +15,7 @@
 @property (nonatomic, strong)        NSArray *resultsArray;
 @property (nonatomic, weak) IBOutlet UITextField *searchTextField;
 @property (nonatomic,weak)  IBOutlet UITableView  *resultsTableView;
+@property (nonatomic, weak) IBOutlet UISearchBar *searchBar;
 
 @end
 
@@ -31,10 +32,13 @@ bool serverAvailable;
 #pragma mark - Interactivity Methods
 
 -(IBAction)getFilePressed:(id)sender {
+    [_searchBar resignFirstResponder];
+    NSString *rawSearchString = [_searchBar.text lowercaseString];
+    NSString *finalSearchString = [rawSearchString stringByReplacingOccurrencesOfString:@" " withString:@"+"];
     NSLog(@"Get File");
     if (serverAvailable) {
         NSLog(@"Server Available");
-        NSURL *fileURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/search?term=jack+johnson", _hostName]];
+        NSURL *fileURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/search?term=%@", _hostName, finalSearchString]];
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
         [request setURL:fileURL];
         [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
@@ -47,12 +51,16 @@ bool serverAvailable;
                 //NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 //NSLog(@"Got String %@", dataString);
                 NSJSONSerialization *json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
-                //NSLog(@"Got jSON %@", json);
+                NSLog(@"Got jSON %@", json);
                 _resultsArray = [(NSDictionary *)json objectForKey:@"results"];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"dataRcvMsg" object:nil];
+//                    [_resultsTableView reloadData];
+                });
                 for (NSDictionary *resultsDict in _resultsArray) {
                     NSLog(@"Results %@ - %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackName"]);
                 }
-                [_resultsTableView reloadData];
+                
             }
         }] resume];
         
@@ -76,15 +84,34 @@ bool serverAvailable;
     NSDictionary* currentTune = _resultsArray[indexPath.row];
     cell.textLabel.text = [currentTune objectForKey:@"trackName"];
     cell.detailTextLabel.text = [currentTune objectForKey:@"artistName"];
+    if ( [[currentTune objectForKey:@"trackExplicitness"] isEqualToString:@"explicit"]) {
+        cell.backgroundColor = [UIColor redColor];
+    } else if ([[currentTune objectForKey:@"trackExplicitness"] isEqualToString:@"notExplicit"]){
+        cell.backgroundColor = [UIColor whiteColor];
+    }
     
     
     return cell;
 }
 
+#pragma mark - Searchbar Delegate
 
+//-(BOOL)searchBarShouldReturn:(UISearchBar *)searchBar {
+//    [self getFilePressed:self];
+//    return true;
+//}
+
+-(void) searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [self getFilePressed:self];
+}
 
 
 #pragma mark - Network Methods
+
+-(void)searchResultRecv:(NSNotification *)notification {
+    NSLog(@"Reloading Table");
+    [_resultsTableView reloadData];
+}
 
 -(void)updateReachabilityStatus:(Reachability *) currentReach { //this method is called anything the network type changes
     NSParameterAssert([currentReach isKindOfClass:[Reachability class]]); //this code makes sure that "currentReach" is actually a Reachablity class
@@ -135,6 +162,7 @@ bool serverAvailable;
     [super viewDidLoad];
     _hostName = @"itunes.apple.com";
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachablityChanged:) name:kReachabilityChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(searchResultRecv:) name:@"dataRcvMsg" object:nil];
     hostReach = [Reachability reachabilityWithHostname:_hostName];
     [hostReach startNotifier];
     
