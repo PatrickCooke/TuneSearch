@@ -11,7 +11,10 @@
 
 @interface ViewController ()
 
-@property (nonatomic, strong) NSString *hostName;
+@property (nonatomic, strong)        NSString *hostName;
+@property (nonatomic, strong)        NSArray *resultsArray;
+@property (nonatomic, weak) IBOutlet UITextField *searchTextField;
+@property (nonatomic,weak)  IBOutlet UITableView  *resultsTableView;
 
 @end
 
@@ -45,10 +48,11 @@ bool serverAvailable;
                 //NSLog(@"Got String %@", dataString);
                 NSJSONSerialization *json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
                 //NSLog(@"Got jSON %@", json);
-                NSArray *resultsArray = [(NSDictionary *)json objectForKey:@"results"];
-                for (NSDictionary *resultsDict in resultsArray) {
+                _resultsArray = [(NSDictionary *)json objectForKey:@"results"];
+                for (NSDictionary *resultsDict in _resultsArray) {
                     NSLog(@"Results %@ - %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackName"]);
                 }
+                [_resultsTableView reloadData];
             }
         }] resume];
         
@@ -59,6 +63,22 @@ bool serverAvailable;
         [alert addAction: okAction];
         [self presentViewController:alert animated:true completion:nil];
     }
+}
+
+#pragma mark - Table View Methods
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _resultsArray.count;
+}
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    NSDictionary* currentTune = _resultsArray[indexPath.row];
+    cell.textLabel.text = [currentTune objectForKey:@"trackName"];
+    cell.detailTextLabel.text = [currentTune objectForKey:@"artistName"];
+    
+    
+    return cell;
 }
 
 
