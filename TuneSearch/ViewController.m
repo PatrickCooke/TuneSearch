@@ -8,14 +8,18 @@
 
 #import "ViewController.h"
 #import "Reachability.h"
+#import "ResultsViewCell.h"
+#import "AppDelegate.h"
+#import "Song.h"
 
 @interface ViewController ()
 
 @property (nonatomic, strong)        NSString *hostName;
-@property (nonatomic, strong)        NSArray *resultsArray;
+@property (nonatomic, strong)        NSMutableArray *resultsArray;
 @property (nonatomic, weak) IBOutlet UITextField *searchTextField;
-@property (nonatomic,weak)  IBOutlet UITableView  *resultsTableView;
-@property (nonatomic, weak) IBOutlet UISearchBar *searchBar;
+@property (nonatomic, weak) IBOutlet UITableView  *resultsTableView;
+@property (nonatomic, weak) IBOutlet UISearchBar *songSearchBar;
+@property (nonatomic, weak) IBOutlet UIView         *songSearchView;
 
 @end
 
@@ -28,12 +32,17 @@ Reachability *internetReach;
 Reachability *wifiReach;
 bool internetAvailable;
 bool serverAvailable;
+//bool showHide;
 
 #pragma mark - Interactivity Methods
 
+-(IBAction)showAndHideSearch:(id)sender {
+    [_songSearchView setHidden:!_songSearchView.hidden];
+}
+
 -(IBAction)getFilePressed:(id)sender {
-    [_searchBar resignFirstResponder];
-    NSString *rawSearchString = [_searchBar.text lowercaseString];
+    [_songSearchBar resignFirstResponder];
+    NSString *rawSearchString = [_songSearchBar.text lowercaseString];
     NSString *finalSearchString = [rawSearchString stringByReplacingOccurrencesOfString:@" " withString:@"+"];
     NSLog(@"Get File");
     if (serverAvailable) {
@@ -47,20 +56,22 @@ bool serverAvailable;
         [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             NSLog(@"Got Response");
             if (([data length] > 0) && (error == nil)) {
-                //NSLog(@"got data %@", data);
-                //NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                //NSLog(@"Got String %@", dataString);
                 NSJSONSerialization *json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
-                NSLog(@"Got jSON %@", json);
-                _resultsArray = [(NSDictionary *)json objectForKey:@"results"];
+                //NSLog(@"Got jSON %@", json);
+                NSArray *tempArray = [(NSDictionary *)json objectForKey:@"results"];
+                [_resultsArray removeAllObjects];
+                
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:@"dataRcvMsg" object:nil];
-//                    [_resultsTableView reloadData];
                 });
-                for (NSDictionary *resultsDict in _resultsArray) {
-                    NSLog(@"Results %@ - %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackName"]);
+                for (NSDictionary *resultsDict in tempArray) {
+                    NSLog(@"songs: %@ track %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackId"]);
+                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]]];
+                    [_resultsArray addObject:newsong];
                 }
-                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [_resultsTableView reloadData];
+                });
             }
         }] resume];
         
@@ -76,22 +87,76 @@ bool serverAvailable;
 #pragma mark - Table View Methods
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSLog(@"count:%lu",(unsigned long)_resultsArray.count);
     return _resultsArray.count;
 }
 
 - (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-    NSDictionary* currentTune = _resultsArray[indexPath.row];
-    cell.textLabel.text = [currentTune objectForKey:@"trackName"];
-    cell.detailTextLabel.text = [currentTune objectForKey:@"artistName"];
-    if ( [[currentTune objectForKey:@"trackExplicitness"] isEqualToString:@"explicit"]) {
+    ResultsViewCell *cell = (ResultsViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    Song* currentTune = _resultsArray[indexPath.row];
+    cell.trackTitleLable.text = currentTune.songTitle;
+    cell.artistNameLable.text = currentTune.artistName;
+    cell.albumTitleLable.text = currentTune.albumTitle;
+    if ([self file:currentTune.trackId isInDirectory:[self getDocumentsDirectory]]) {
+        NSLog(@"Found %@",currentTune.trackId);
+        cell.albumArtImageView.image = [UIImage imageNamed:[[self getDocumentsDirectory] stringByAppendingPathComponent:currentTune.trackId]];
+    } else {
+        cell.albumArtImageView.image = nil;
+        [self getImageFromServer:currentTune.trackId fromURL: currentTune.albumArtFileName atIndexPath:indexPath];
+        NSLog(@"had to fetch %@", currentTune.trackId);
+    }
+    if ( [currentTune.trackExplicit isEqualToString:@"explicit"]) {
         cell.backgroundColor = [UIColor redColor];
-    } else if ([[currentTune objectForKey:@"trackExplicitness"] isEqualToString:@"notExplicit"]){
+    } else if ([currentTune.trackExplicit isEqualToString:@"notExplicit"]){
         cell.backgroundColor = [UIColor whiteColor];
     }
-    
-    
     return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath   {
+    return 60.0;
+}
+
+#pragma mark - File System Methods
+
+- (NSString *)getDocumentsDirectory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
+    NSLog(@"DocPath: %@",paths[0]);
+    return paths[0];
+} //to find the documents folder
+
+- (BOOL)file:(NSString *)filename isInDirectory:(NSString *)directory {
+    NSFileManager *filemanager = [NSFileManager defaultManager];
+    NSString *filePath = [directory stringByAppendingPathComponent:filename];
+    return [filemanager fileExistsAtPath:filePath];
+    //reusable method to check and see if a specific file exists
+}
+
+-(void)getImageFromServer:(NSString *)localFileName fromURL:(NSString *)fullFileName atIndexPath:(NSIndexPath *)indexpath {
+    if (serverAvailable) {
+        NSLog(@"local:%@ full:%@",localFileName,fullFileName);
+        NSURL *fileURL = [NSURL URLWithString:fullFileName];
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        [request setURL:fileURL];
+        [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
+        [request setTimeoutInterval:30.0];
+        NSURLSession *session = [NSURLSession sharedSession];
+        [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            NSLog(@"Image Length:%li error: %@",[data length],error);
+            if (([data length] > 0) && (error == nil)) {
+                NSString *savedFilePath = [[self getDocumentsDirectory] stringByAppendingPathComponent:localFileName];
+                UIImage *imageTemp = [UIImage imageWithData:data];
+                if (imageTemp !=nil) {
+                    [data writeToFile:savedFilePath atomically:true];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [_resultsTableView reloadRowsAtIndexPaths:@[indexpath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    });
+                }
+            }
+        }] resume];
+    } else {
+        NSLog(@"server not available");
+    }
 }
 
 #pragma mark - Searchbar Delegate
@@ -171,6 +236,8 @@ bool serverAvailable;
     
     wifiReach = [Reachability reachabilityForLocalWiFi];
     [wifiReach startNotifier];
+    
+    _resultsArray = [[NSMutableArray alloc] init];
 }
 
 - (void)didReceiveMemoryWarning {

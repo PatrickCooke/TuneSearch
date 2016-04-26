@@ -15,6 +15,9 @@
 		438C13E61CCE76F6005516A5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 438C13E41CCE76F6005516A5 /* LaunchScreen.storyboard */; };
 		438C13EF1CCE776B005516A5 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13EE1CCE776B005516A5 /* Reachability.m */; };
 		438C13F11CCE9921005516A5 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 438C13F01CCE9921005516A5 /* SystemConfiguration.framework */; };
+		438C13F41CCF98F4005516A5 /* ResultsViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13F31CCF98F4005516A5 /* ResultsViewCell.m */; };
+		438C13FF1CCFD4B6005516A5 /* Song.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13FE1CCFD4B6005516A5 /* Song.m */; };
+		438C14011CCFE0E8005516A5 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 438C14001CCFE0E8005516A5 /* Social.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +34,11 @@
 		438C13ED1CCE776B005516A5 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		438C13EE1CCE776B005516A5 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		438C13F01CCE9921005516A5 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		438C13F21CCF98F4005516A5 /* ResultsViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResultsViewCell.h; sourceTree = "<group>"; };
+		438C13F31CCF98F4005516A5 /* ResultsViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResultsViewCell.m; sourceTree = "<group>"; };
+		438C13FD1CCFD4B6005516A5 /* Song.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Song.h; sourceTree = "<group>"; };
+		438C13FE1CCFD4B6005516A5 /* Song.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Song.m; sourceTree = "<group>"; };
+		438C14001CCFE0E8005516A5 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,6 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				438C14011CCFE0E8005516A5 /* Social.framework in Frameworks */,
 				438C13F11CCE9921005516A5 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -48,6 +57,7 @@
 		438C13CA1CCE76F6005516A5 = {
 			isa = PBXGroup;
 			children = (
+				438C14001CCFE0E8005516A5 /* Social.framework */,
 				438C13F01CCE9921005516A5 /* SystemConfiguration.framework */,
 				438C13D51CCE76F6005516A5 /* TuneSearch */,
 				438C13D41CCE76F6005516A5 /* Products */,
@@ -69,9 +79,13 @@
 				438C13DA1CCE76F6005516A5 /* AppDelegate.m */,
 				438C13DC1CCE76F6005516A5 /* ViewController.h */,
 				438C13DD1CCE76F6005516A5 /* ViewController.m */,
+				438C13FD1CCFD4B6005516A5 /* Song.h */,
+				438C13FE1CCFD4B6005516A5 /* Song.m */,
 				438C13ED1CCE776B005516A5 /* Reachability.h */,
 				438C13EE1CCE776B005516A5 /* Reachability.m */,
 				438C13DF1CCE76F6005516A5 /* Main.storyboard */,
+				438C13F21CCF98F4005516A5 /* ResultsViewCell.h */,
+				438C13F31CCF98F4005516A5 /* ResultsViewCell.m */,
 				438C13E21CCE76F6005516A5 /* Assets.xcassets */,
 				438C13E41CCE76F6005516A5 /* LaunchScreen.storyboard */,
 				438C13E71CCE76F6005516A5 /* Info.plist */,
@@ -159,7 +173,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				438C13FF1CCFD4B6005516A5 /* Song.m in Sources */,
 				438C13DE1CCE76F6005516A5 /* ViewController.m in Sources */,
+				438C13F41CCF98F4005516A5 /* ResultsViewCell.m in Sources */,
 				438C13DB1CCE76F6005516A5 /* AppDelegate.m in Sources */,
 				438C13EF1CCE776B005516A5 /* Reachability.m in Sources */,
 				438C13D81CCE76F6005516A5 /* main.m in Sources */,
