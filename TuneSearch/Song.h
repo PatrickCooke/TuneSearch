@@ -16,9 +16,12 @@
 @property (nonatomic, strong) NSString *albumArtFileName;
 @property (nonatomic, strong) NSString *trackExplicit;
 @property (nonatomic, strong) NSString *trackId;
+@property (nonatomic, strong) NSString *itemKind;
+@property (nonatomic, strong) NSString *previewUrl;
+@property (nonatomic, strong) NSString *previewName;
+@property (nonatomic, strong) NSString *descriptString;
 
 
-
--(id) initWithArtistName: (NSString *)artistName andSongTitle: (NSString *)songTitle andalbumTitle:(NSString *)albumTitle andAlbumtArtFileName: (NSString *)albumArtFileName andtrackExplicit: (NSString *)trackExplicit andtrackId:(NSString *)trackId;
+-(id) initWithArtistName: (NSString *)artistName andSongTitle: (NSString *)songTitle andalbumTitle:(NSString *)albumTitle andAlbumtArtFileName: (NSString *)albumArtFileName andtrackExplicit: (NSString *)trackExplicit andtrackId:(NSString *)trackId anditemKind:(NSString *)itemKind andpreviewUrl:(NSString *)previewUrl andpreviewName:(NSString *)previewName anddescriptString:(NSString *)descriptString;
 
 @end

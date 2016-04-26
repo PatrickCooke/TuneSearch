@@ -11,6 +11,7 @@
 #import "ResultsViewCell.h"
 #import "AppDelegate.h"
 #import "Song.h"
+#import "DetailsViewController.h"
 
 @interface ViewController ()
 
@@ -57,7 +58,7 @@ bool serverAvailable;
             NSLog(@"Got Response");
             if (([data length] > 0) && (error == nil)) {
                 NSJSONSerialization *json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
-                //NSLog(@"Got jSON %@", json);
+                NSLog(@"Got jSON %@", json);
                 NSArray *tempArray = [(NSDictionary *)json objectForKey:@"results"];
                 [_resultsArray removeAllObjects];
                 
@@ -66,7 +67,7 @@ bool serverAvailable;
                 });
                 for (NSDictionary *resultsDict in tempArray) {
                     NSLog(@"songs: %@ track %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackId"]);
-                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]]];
+                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]] anditemKind:[resultsDict objectForKey:@"kind"] andpreviewUrl:[resultsDict objectForKey:@"previewURL"] andpreviewName:[NSString stringWithFormat:@"%@.m4a",[resultsDict objectForKey:@"trackId"]] anddescriptString:[resultsDict objectForKey:@"longDescription"]];
                     [_resultsArray addObject:newsong];
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -97,9 +98,9 @@ bool serverAvailable;
     cell.trackTitleLable.text = currentTune.songTitle;
     cell.artistNameLable.text = currentTune.artistName;
     cell.albumTitleLable.text = currentTune.albumTitle;
-    if ([self file:currentTune.trackId isInDirectory:[self getDocumentsDirectory]]) {
+    if ([self file:currentTune.trackId isInDirectory:NSTemporaryDirectory()]) {
         NSLog(@"Found %@",currentTune.trackId);
-        cell.albumArtImageView.image = [UIImage imageNamed:[[self getDocumentsDirectory] stringByAppendingPathComponent:currentTune.trackId]];
+        cell.albumArtImageView.image = [UIImage imageNamed:[NSTemporaryDirectory() stringByAppendingPathComponent:currentTune.trackId]];
     } else {
         cell.albumArtImageView.image = nil;
         [self getImageFromServer:currentTune.trackId fromURL: currentTune.albumArtFileName atIndexPath:indexPath];
@@ -117,13 +118,21 @@ bool serverAvailable;
     return 60.0;
 }
 
+#pragma mark - Prepare for Segueue
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    DetailsViewController *destController = [segue destinationViewController];
+    NSIndexPath *indexpath = [_resultsTableView indexPathForSelectedRow];
+    destController.currentTune = [_resultsArray objectAtIndex:indexpath.row];
+}
+
 #pragma mark - File System Methods
 
-- (NSString *)getDocumentsDirectory {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
-    NSLog(@"DocPath: %@",paths[0]);
-    return paths[0];
-} //to find the documents folder
+//- (NSString *)getDocumentsDirectory {
+//    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true);
+//    NSLog(@"DocPath: %@",paths[0]);
+//    return paths[0];
+//} //to find the documents folder
 
 - (BOOL)file:(NSString *)filename isInDirectory:(NSString *)directory {
     NSFileManager *filemanager = [NSFileManager defaultManager];
@@ -144,7 +153,7 @@ bool serverAvailable;
         [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             NSLog(@"Image Length:%li error: %@",[data length],error);
             if (([data length] > 0) && (error == nil)) {
-                NSString *savedFilePath = [[self getDocumentsDirectory] stringByAppendingPathComponent:localFileName];
+                NSString *savedFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:localFileName];
                 UIImage *imageTemp = [UIImage imageWithData:data];
                 if (imageTemp !=nil) {
                     [data writeToFile:savedFilePath atomically:true];
@@ -160,11 +169,6 @@ bool serverAvailable;
 }
 
 #pragma mark - Searchbar Delegate
-
-//-(BOOL)searchBarShouldReturn:(UISearchBar *)searchBar {
-//    [self getFilePressed:self];
-//    return true;
-//}
 
 -(void) searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     [self getFilePressed:self];

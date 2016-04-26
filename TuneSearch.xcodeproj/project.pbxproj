@@ -18,6 +18,7 @@
 		438C13F41CCF98F4005516A5 /* ResultsViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13F31CCF98F4005516A5 /* ResultsViewCell.m */; };
 		438C13FF1CCFD4B6005516A5 /* Song.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C13FE1CCFD4B6005516A5 /* Song.m */; };
 		438C14011CCFE0E8005516A5 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 438C14001CCFE0E8005516A5 /* Social.framework */; };
+		438C14041CD0075D005516A5 /* DetailsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 438C14031CD0075D005516A5 /* DetailsViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,8 @@
 		438C13FD1CCFD4B6005516A5 /* Song.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Song.h; sourceTree = "<group>"; };
 		438C13FE1CCFD4B6005516A5 /* Song.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Song.m; sourceTree = "<group>"; };
 		438C14001CCFE0E8005516A5 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		438C14021CD0075D005516A5 /* DetailsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailsViewController.h; sourceTree = "<group>"; };
+		438C14031CD0075D005516A5 /* DetailsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailsViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +87,8 @@
 				438C13ED1CCE776B005516A5 /* Reachability.h */,
 				438C13EE1CCE776B005516A5 /* Reachability.m */,
 				438C13DF1CCE76F6005516A5 /* Main.storyboard */,
+				438C14021CD0075D005516A5 /* DetailsViewController.h */,
+				438C14031CD0075D005516A5 /* DetailsViewController.m */,
 				438C13F21CCF98F4005516A5 /* ResultsViewCell.h */,
 				438C13F31CCF98F4005516A5 /* ResultsViewCell.m */,
 				438C13E21CCE76F6005516A5 /* Assets.xcassets */,
@@ -177,6 +182,7 @@
 				438C13DE1CCE76F6005516A5 /* ViewController.m in Sources */,
 				438C13F41CCF98F4005516A5 /* ResultsViewCell.m in Sources */,
 				438C13DB1CCE76F6005516A5 /* AppDelegate.m in Sources */,
+				438C14041CD0075D005516A5 /* DetailsViewController.m in Sources */,
 				438C13EF1CCE776B005516A5 /* Reachability.m in Sources */,
 				438C13D81CCE76F6005516A5 /* main.m in Sources */,
 			);
