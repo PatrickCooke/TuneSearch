@@ -10,6 +10,8 @@
 #import <Social/Social.h>
 #import "AppDelegate.h"
 #import "Song.h"
+#import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 @interface DetailsViewController ()
 
@@ -19,6 +21,9 @@
 @property (nonatomic,weak) IBOutlet UILabel *artistLabel;
 @property (nonatomic,weak) IBOutlet UITextView *descriptTextView;
 @property (nonatomic,weak) IBOutlet UIImageView *albumcoverImageView;
+
+@property (nonatomic,strong) AVPlayer *audioplayer;
+
 
 @end
 
@@ -82,6 +87,12 @@
     [self.navigationController presentViewController:activityVC animated:true completion:nil];
 }
 
+-(IBAction)sampleAudioPreview:(id)sender {
+    [_audioplayer play];
+    NSLog(@"hit play");
+}
+
+
 
 #pragma mark - Life Cycle Methods
 
@@ -93,8 +104,13 @@
     _artistLabel.text = _currentTune.artistName;
     _descriptTextView.text = _currentTune.descriptString;
     _albumcoverImageView.image = [UIImage imageNamed:_currentTune.trackId];
-    NSLog(@" %@ - %@ - %@", _currentTune.songTitle, _currentTune.artistName, _currentTune.albumTitle);
+    NSLog(@"title-artist, album %@ - %@ - %@", _currentTune.songTitle, _currentTune.artistName, _currentTune.albumTitle);
     NSLog(@"image id - %@", _currentTune.trackId);
+    
+    NSURL *audioPreview = [NSURL URLWithString:_currentTune.previewUrl];
+    _audioplayer = [[AVPlayer alloc] initWithURL:audioPreview];
+    NSLog(@"song url - %@", _currentTune.previewUrl);
+    //NSLog(@"song name %@", _currentTune.previewName);
 }
 
 - (void)didReceiveMemoryWarning {

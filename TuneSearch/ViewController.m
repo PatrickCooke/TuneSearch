@@ -67,7 +67,7 @@ bool serverAvailable;
                 });
                 for (NSDictionary *resultsDict in tempArray) {
                     NSLog(@"songs: %@ track %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackId"]);
-                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]] anditemKind:[resultsDict objectForKey:@"kind"] andpreviewUrl:[resultsDict objectForKey:@"previewURL"] andpreviewName:[NSString stringWithFormat:@"%@.m4a",[resultsDict objectForKey:@"trackId"]] anddescriptString:[resultsDict objectForKey:@"longDescription"]];
+                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]] anditemKind:[resultsDict objectForKey:@"kind"] andpreviewUrl:[resultsDict objectForKey:@"previewUrl"] andpreviewName:[NSString stringWithFormat:@"%@.m4a",[resultsDict objectForKey:@"trackId"]] anddescriptString:[resultsDict objectForKey:@"longDescription"]];
                     [_resultsArray addObject:newsong];
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -99,12 +99,12 @@ bool serverAvailable;
     cell.artistNameLable.text = currentTune.artistName;
     cell.albumTitleLable.text = currentTune.albumTitle;
     if ([self file:currentTune.trackId isInDirectory:NSTemporaryDirectory()]) {
-        NSLog(@"Found %@",currentTune.trackId);
+        //NSLog(@"Found %@",currentTune.trackId);
         cell.albumArtImageView.image = [UIImage imageNamed:[NSTemporaryDirectory() stringByAppendingPathComponent:currentTune.trackId]];
     } else {
         cell.albumArtImageView.image = nil;
         [self getImageFromServer:currentTune.trackId fromURL: currentTune.albumArtFileName atIndexPath:indexPath];
-        NSLog(@"had to fetch %@", currentTune.trackId);
+        //NSLog(@"had to fetch %@", currentTune.trackId);
     }
     if ( [currentTune.trackExplicit isEqualToString:@"explicit"]) {
         cell.backgroundColor = [UIColor redColor];
@@ -143,7 +143,7 @@ bool serverAvailable;
 
 -(void)getImageFromServer:(NSString *)localFileName fromURL:(NSString *)fullFileName atIndexPath:(NSIndexPath *)indexpath {
     if (serverAvailable) {
-        NSLog(@"local:%@ full:%@",localFileName,fullFileName);
+        //NSLog(@"local:%@ full:%@",localFileName,fullFileName);
         NSURL *fileURL = [NSURL URLWithString:fullFileName];
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
         [request setURL:fileURL];
@@ -151,7 +151,7 @@ bool serverAvailable;
         [request setTimeoutInterval:30.0];
         NSURLSession *session = [NSURLSession sharedSession];
         [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-            NSLog(@"Image Length:%li error: %@",[data length],error);
+            //NSLog(@"Image Length:%li error: %@",[data length],error);
             if (([data length] > 0) && (error == nil)) {
                 NSString *savedFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:localFileName];
                 UIImage *imageTemp = [UIImage imageWithData:data];

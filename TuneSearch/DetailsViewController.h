@@ -9,9 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "Song.h"
 #import <MessageUI/MessageUI.h>
+#import <AVFoundation/AVFoundation.h>
 
 @interface DetailsViewController : UIViewController <MFMailComposeViewControllerDelegate, MFMessageComposeViewControllerDelegate>
 
 @property (nonatomic,strong) Song *currentTune;
+
 @end
 
