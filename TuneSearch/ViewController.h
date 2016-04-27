@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UISearchBarDelegate>
+@interface ViewController : UIViewController <UICollectionViewDelegate, UICollectionViewDataSource, UITextFieldDelegate, UISearchBarDelegate> //<UITableViewDelegate, UITableViewDataSource>
 
 
 @end

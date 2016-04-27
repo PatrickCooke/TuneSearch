@@ -11,7 +11,7 @@
 #import "AppDelegate.h"
 #import "Song.h"
 #import <AVFoundation/AVFoundation.h>
-#import <AudioToolbox/AudioToolbox.h>
+#import <SafariServices/SafariServices.h>
 
 @interface DetailsViewController ()
 
@@ -21,8 +21,12 @@
 @property (nonatomic,weak) IBOutlet UILabel *artistLabel;
 @property (nonatomic,weak) IBOutlet UITextView *descriptTextView;
 @property (nonatomic,weak) IBOutlet UIImageView *albumcoverImageView;
+@property (nonatomic,weak) IBOutlet UIButton *samplePlayButton;
+@property (nonatomic,weak) IBOutlet UIButton *samplePauseButton;
+@property (nonatomic,weak) IBOutlet UIButton *artistInfoButton;
 
 @property (nonatomic,strong) AVPlayer *audioplayer;
+
 
 
 @end
@@ -89,9 +93,42 @@
 
 -(IBAction)sampleAudioPreview:(id)sender {
     [_audioplayer play];
-    NSLog(@"hit play");
 }
 
+-(IBAction)sampleAudioPause:(id)sender {
+    [_audioplayer pause];
+}
+
+-(IBAction)showArtistUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
+    NSLog(@"pressed artist Info - %@",_currentTune.artistInfoURLString);
+    SFSafariViewController *SafairVC = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:_currentTune.artistInfoURLString]];
+    [self.navigationController presentViewController:SafairVC animated:true completion:nil];
+}
+
+-(IBAction)showTrackUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
+    NSLog(@"pressed track Info - %@",_currentTune.trackInfoURLString);
+    SFSafariViewController *SafairVC = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:_currentTune.trackInfoURLString]];
+[self.navigationController presentViewController:SafairVC animated:true completion:nil];
+}
+//-(IBAction)showArtistUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
+//    NSURL *myURL = [NSURL URLWithString:_currentTune.artistInfoURLString];
+//    if ([[UIApplication sharedApplication] canOpenURL:myURL]) {
+//        NSLog(@"can open - %@",_currentTune.artistInfoURLString);
+//        [[UIApplication sharedApplication] openURL:myURL];
+//    } else {
+//        NSLog(@"can't open - %@",_currentTune.artistInfoURLString);
+//    }
+//}
+//
+//-(IBAction)showTrackUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
+//    NSURL *myURL = [NSURL URLWithString:_currentTune.trackInfoURLString];
+//    if ([[UIApplication sharedApplication] canOpenURL:myURL]) {
+//        NSLog(@"can open - %@",_currentTune.trackInfoURLString);
+//        [[UIApplication sharedApplication] openURL:myURL];
+//    } else {
+//        NSLog(@"can't open- %@",_currentTune.trackInfoURLString);
+//    }
+//}
 
 
 #pragma mark - Life Cycle Methods
@@ -111,6 +148,16 @@
     _audioplayer = [[AVPlayer alloc] initWithURL:audioPreview];
     NSLog(@"song url - %@", _currentTune.previewUrl);
     //NSLog(@"song name %@", _currentTune.previewName);
+    if ([_currentTune.itemKind isEqualToString: @"feature-movie"]) {
+        [_artistInfoButton setUserInteractionEnabled:false];
+        [_artistInfoButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_samplePlayButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_samplePauseButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    } else {
+        [_artistInfoButton setUserInteractionEnabled:true];
+        [_samplePauseButton setUserInteractionEnabled:true];
+        [_samplePlayButton setUserInteractionEnabled:true];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

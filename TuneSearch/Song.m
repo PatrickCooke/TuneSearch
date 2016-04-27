@@ -10,7 +10,7 @@
 
 @implementation Song
 
-- (id) initWithArtistName:(NSString *)artistName andSongTitle:(NSString *)songTitle andalbumTitle:(NSString *)albumTitle andAlbumtArtFileName:(NSString *)albumArtFileName andtrackExplicit:(NSString *)trackExplicit andtrackId:(NSString *)trackId anditemKind:(NSString *)itemKind andpreviewUrl:(NSString *)previewUrl andpreviewName:(NSString *)previewName anddescriptString:(NSString *)descriptString
+- (id) initWithArtistName:(NSString *)artistName andSongTitle:(NSString *)songTitle andalbumTitle:(NSString *)albumTitle andAlbumtArtFileName:(NSString *)albumArtFileName andtrackExplicit:(NSString *)trackExplicit andtrackId:(NSString *)trackId anditemKind:(NSString *)itemKind andpreviewUrl:(NSString *)previewUrl andpreviewName:(NSString *)previewName anddescriptString:(NSString *)descriptString andartistInfoURLString:(NSString *)artistInfoURLString andtrackInfoURLString:(NSString *)trackInfoURLString
 {
     self = [super init];
     if (self) {
@@ -24,6 +24,8 @@
         self.previewUrl = previewUrl;
         self.previewName = previewName;
         self.descriptString = descriptString;
+        self.artistInfoURLString = artistInfoURLString;
+        self.trackInfoURLString = trackInfoURLString;
     }
     return self;
 }

@@ -12,15 +12,15 @@
 #import "AppDelegate.h"
 #import "Song.h"
 #import "DetailsViewController.h"
+#import "ResultsCollectionViewCell.h"
 
 @interface ViewController ()
 
 @property (nonatomic, strong)        NSString *hostName;
 @property (nonatomic, strong)        NSMutableArray *resultsArray;
-@property (nonatomic, weak) IBOutlet UITextField *searchTextField;
-@property (nonatomic, weak) IBOutlet UITableView  *resultsTableView;
 @property (nonatomic, weak) IBOutlet UISearchBar *songSearchBar;
 @property (nonatomic, weak) IBOutlet UIView         *songSearchView;
+@property (nonatomic,weak) IBOutlet UICollectionView *ResultsCollectionView;
 
 @end
 
@@ -33,7 +33,6 @@ Reachability *internetReach;
 Reachability *wifiReach;
 bool internetAvailable;
 bool serverAvailable;
-//bool showHide;
 
 #pragma mark - Interactivity Methods
 
@@ -67,11 +66,11 @@ bool serverAvailable;
                 });
                 for (NSDictionary *resultsDict in tempArray) {
                     NSLog(@"songs: %@ track %@", [resultsDict objectForKey:@"artistName"],[resultsDict objectForKey:@"trackId"]);
-                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl60"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]] anditemKind:[resultsDict objectForKey:@"kind"] andpreviewUrl:[resultsDict objectForKey:@"previewUrl"] andpreviewName:[NSString stringWithFormat:@"%@.m4a",[resultsDict objectForKey:@"trackId"]] anddescriptString:[resultsDict objectForKey:@"longDescription"]];
+                    Song *newsong = [[Song alloc] initWithArtistName:[resultsDict objectForKey:@"artistName"] andSongTitle:[resultsDict objectForKey:@"trackName"] andalbumTitle:[resultsDict objectForKey:@"collectionName"] andAlbumtArtFileName:[resultsDict objectForKey:@"artworkUrl100"] andtrackExplicit:[resultsDict objectForKey:@"trackExplicitness"] andtrackId:[NSString stringWithFormat:@"%@.jpg",[resultsDict objectForKey:@"trackId"]] anditemKind:[resultsDict objectForKey:@"kind"] andpreviewUrl:[resultsDict objectForKey:@"previewUrl"] andpreviewName:[NSString stringWithFormat:@"%@.m4a",[resultsDict objectForKey:@"trackId"]] anddescriptString:[resultsDict objectForKey:@"longDescription"] andartistInfoURLString:[resultsDict objectForKey:@"artistViewUrl"] andtrackInfoURLString:[resultsDict objectForKey:@"trackViewUrl"]];
                     [_resultsArray addObject:newsong];
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [_resultsTableView reloadData];
+                    [_ResultsCollectionView reloadData];
                 });
             }
         }] resume];
@@ -85,44 +84,40 @@ bool serverAvailable;
     }
 }
 
-#pragma mark - Table View Methods
+#pragma mark - CollectionView Method
 
-- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    NSLog(@"count:%lu",(unsigned long)_resultsArray.count);
+-(NSInteger) collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return _resultsArray.count;
 }
 
-- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    ResultsViewCell *cell = (ResultsViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-    Song* currentTune = _resultsArray[indexPath.row];
-    cell.trackTitleLable.text = currentTune.songTitle;
-    cell.artistNameLable.text = currentTune.artistName;
-    cell.albumTitleLable.text = currentTune.albumTitle;
+-(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    ResultsCollectionViewCell *cell = (ResultsCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
+    Song *currentTune = _resultsArray[indexPath.row];
+    cell.ArtistLabel.text = currentTune.artistName;
+    cell.TrackLabel.text = currentTune.songTitle;
     if ([self file:currentTune.trackId isInDirectory:NSTemporaryDirectory()]) {
-        //NSLog(@"Found %@",currentTune.trackId);
+        NSLog(@"Not Found %@",currentTune.trackId);
         cell.albumArtImageView.image = [UIImage imageNamed:[NSTemporaryDirectory() stringByAppendingPathComponent:currentTune.trackId]];
     } else {
         cell.albumArtImageView.image = nil;
         [self getImageFromServer:currentTune.trackId fromURL: currentTune.albumArtFileName atIndexPath:indexPath];
-        //NSLog(@"had to fetch %@", currentTune.trackId);
+        NSLog(@"Not Found %@",currentTune.trackId);
     }
-    if ( [currentTune.trackExplicit isEqualToString:@"explicit"]) {
-        cell.backgroundColor = [UIColor redColor];
-    } else if ([currentTune.trackExplicit isEqualToString:@"notExplicit"]){
-        cell.backgroundColor = [UIColor whiteColor];
-    }
+    cell.layer.masksToBounds = YES;
+    cell.layer.cornerRadius = 4;
+    
     return cell;
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath   {
-    return 60.0;
+-(CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(100.0, 138.0);
 }
 
 #pragma mark - Prepare for Segueue
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     DetailsViewController *destController = [segue destinationViewController];
-    NSIndexPath *indexpath = [_resultsTableView indexPathForSelectedRow];
+    NSIndexPath *indexpath = [_ResultsCollectionView indexPathsForSelectedItems][0];
     destController.currentTune = [_resultsArray objectAtIndex:indexpath.row];
 }
 
@@ -158,7 +153,8 @@ bool serverAvailable;
                 if (imageTemp !=nil) {
                     [data writeToFile:savedFilePath atomically:true];
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [_resultsTableView reloadRowsAtIndexPaths:@[indexpath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        [_ResultsCollectionView reloadItemsAtIndexPaths:@[indexpath]];
+//                        [_resultsTableView reloadRowsAtIndexPaths:@[indexpath] withRowAnimation:UITableViewRowAnimationAutomatic];
                     });
                 }
             }
@@ -179,7 +175,7 @@ bool serverAvailable;
 
 -(void)searchResultRecv:(NSNotification *)notification {
     NSLog(@"Reloading Table");
-    [_resultsTableView reloadData];
+    [_ResultsCollectionView reloadData];
 }
 
 -(void)updateReachabilityStatus:(Reachability *) currentReach { //this method is called anything the network type changes
