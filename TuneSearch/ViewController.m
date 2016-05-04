@@ -25,6 +25,7 @@
 @property (nonatomic,weak) IBOutlet  UIView             *menuView;
 @property (nonatomic,weak) IBOutlet  NSLayoutConstraint *menuTopConstraint;
 @property (nonatomic,weak) IBOutlet  NSLayoutConstraint *menuCollectConstraint;
+@property (nonatomic,weak) IBOutlet  NSLayoutConstraint *bottomCollectConstraint;
 
 
 @end
@@ -41,13 +42,11 @@ bool serverAvailable;
 
 #pragma mark - Keyboard Methods
 
-- (void)keyboardWillShow:(NSNotification *)aNotification {
+- (void)keyboardMoved:(NSNotification *)aNotification {
+    NSLog(@"keyboard changed");
     NSDictionary *userInfo = aNotification.userInfo;
     
-    //
-    // Get keyboard size.
-    
-    NSValue *beginFrameValue = userInfo[UIKeyboardFrameBeginUserInfoKey];
+    NSValue *beginFrameValue = userInfo[UIKeyboardDidChangeFrameNotification];
     CGRect keyboardBeginFrame = [self.view convertRect:beginFrameValue.CGRectValue fromView:nil];
     
     NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
@@ -62,27 +61,13 @@ bool serverAvailable;
     NSNumber *curveValue = userInfo[UIKeyboardAnimationCurveUserInfoKey];
     UIViewAnimationCurve animationCurve = curveValue.intValue;
     
-    //
-    // Create animation.
+    CGRect tableViewFrame = self.ResultsCollectionView.frame;
+    tableViewFrame.size.height = (keyboardBeginFrame.origin.y - tableViewFrame.origin.y);
+    self.ResultsCollectionView.frame = tableViewFrame;
     
-    CGRect collectViewFrame = self.ResultsCollectionView.frame;
-    collectViewFrame.size.height = (keyboardBeginFrame.origin.y - collectViewFrame.origin.y);
-    self.ResultsCollectionView.frame = collectViewFrame;
-    
-    void (^animations)() = ^() {
-        CGRect collectViewFrame = self.ResultsCollectionView.frame;
-        collectViewFrame.size.height = (keyboardEndFrame.origin.y - collectViewFrame.origin.y);
-        self.ResultsCollectionView.frame = collectViewFrame;
-    };
-    
-    //
-    // Begin animation.
-    
-    [ResultsCollectionViewCell animateWithDuration:animationDuration
-                          delay:0.0
-                        options:(animationCurve << 16)
-                     animations:animations
-                     completion:nil];
+    [UIView animateWithDuration:animationDuration delay:0.0 options:animationCurve animations:^{
+        _bottomCollectConstraint.constant = -1*(keyboardEndFrame.origin.y);
+    } completion:nil];
 }
 
 #pragma mark - Interactivity Methods
@@ -199,14 +184,25 @@ bool serverAvailable;
         [self getImageFromServer:currentTune.trackId fromURL: currentTune.albumArtFileName atIndexPath:indexPath];
         NSLog(@"Not Found %@",currentTune.trackId);
     }
+    if ([currentTune.itemKind isEqualToString: @"feature-movie"]) {
+        [cell.sampleButton setUserInteractionEnabled:false];
+        [cell.sampleButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    } else if ([currentTune.itemKind isEqualToString: @"tv-episode"]){
+        [cell.sampleButton setUserInteractionEnabled:false];
+        [cell.sampleButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    } else if ([currentTune.itemKind isEqualToString: @"song"]){
+        [cell.sampleButton setUserInteractionEnabled:true];
+        [cell.sampleButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    }
+    if ([currentTune.trackExplicit isEqualToString:@"explicit"]) {
+        cell.backgroundColor = [UIColor redColor];
+    } else if ([currentTune.trackExplicit isEqualToString:@"notExplicit"]) {
+        cell.backgroundColor = [UIColor colorWithRed:204.0f/255.0f green:204.0f/255.0f blue:204.0f/255.0f alpha:1.0];
+    }
     cell.layer.masksToBounds = YES;
     cell.layer.cornerRadius = 4;
     
     return cell;
-}
-
--(CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(100.0, 158.0);
 }
 
 #pragma mark - Prepare for Segueue
@@ -335,7 +331,7 @@ bool serverAvailable;
     
     _resultsArray = [[NSMutableArray alloc] init];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
 
