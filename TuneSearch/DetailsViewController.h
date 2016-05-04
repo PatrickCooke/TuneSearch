@@ -11,7 +11,7 @@
 #import <MessageUI/MessageUI.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface DetailsViewController : UIViewController <MFMailComposeViewControllerDelegate, MFMessageComposeViewControllerDelegate>
+@interface DetailsViewController : UIViewController <MFMailComposeViewControllerDelegate, MFMessageComposeViewControllerDelegate,UIGestureRecognizerDelegate>
 
 @property (nonatomic,strong) Song *currentTune;
 

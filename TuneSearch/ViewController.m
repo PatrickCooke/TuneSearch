@@ -12,15 +12,20 @@
 #import "AppDelegate.h"
 #import "Song.h"
 #import "DetailsViewController.h"
+#import <AVFoundation/AVFoundation.h>
 #import "ResultsCollectionViewCell.h"
 
 @interface ViewController ()
 
-@property (nonatomic, strong)        NSString *hostName;
-@property (nonatomic, strong)        NSMutableArray *resultsArray;
-@property (nonatomic, weak) IBOutlet UISearchBar *songSearchBar;
-@property (nonatomic, weak) IBOutlet UIView         *songSearchView;
-@property (nonatomic,weak) IBOutlet UICollectionView *ResultsCollectionView;
+@property (nonatomic, strong)        NSString           *hostName;
+@property (nonatomic, strong)        NSMutableArray     *resultsArray;
+@property (nonatomic, weak) IBOutlet UISearchBar        *songSearchBar;
+@property (nonatomic,weak) IBOutlet  UICollectionView   *ResultsCollectionView;
+@property (nonatomic,strong)         AVPlayer           *audioplayer;
+@property (nonatomic,weak) IBOutlet  UIView             *menuView;
+@property (nonatomic,weak) IBOutlet  NSLayoutConstraint *menuTopConstraint;
+@property (nonatomic,weak) IBOutlet  NSLayoutConstraint *menuCollectConstraint;
+
 
 @end
 
@@ -34,10 +39,101 @@ Reachability *wifiReach;
 bool internetAvailable;
 bool serverAvailable;
 
+#pragma mark - Keyboard Methods
+
+- (void)keyboardWillShow:(NSNotification *)aNotification {
+    NSDictionary *userInfo = aNotification.userInfo;
+    
+    //
+    // Get keyboard size.
+    
+    NSValue *beginFrameValue = userInfo[UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyboardBeginFrame = [self.view convertRect:beginFrameValue.CGRectValue fromView:nil];
+    
+    NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardEndFrame = [self.view convertRect:endFrameValue.CGRectValue fromView:nil];
+    
+    //
+    // Get keyboard animation.
+    
+    NSNumber *durationValue = userInfo[UIKeyboardAnimationDurationUserInfoKey];
+    NSTimeInterval animationDuration = durationValue.doubleValue;
+    
+    NSNumber *curveValue = userInfo[UIKeyboardAnimationCurveUserInfoKey];
+    UIViewAnimationCurve animationCurve = curveValue.intValue;
+    
+    //
+    // Create animation.
+    
+    CGRect collectViewFrame = self.ResultsCollectionView.frame;
+    collectViewFrame.size.height = (keyboardBeginFrame.origin.y - collectViewFrame.origin.y);
+    self.ResultsCollectionView.frame = collectViewFrame;
+    
+    void (^animations)() = ^() {
+        CGRect collectViewFrame = self.ResultsCollectionView.frame;
+        collectViewFrame.size.height = (keyboardEndFrame.origin.y - collectViewFrame.origin.y);
+        self.ResultsCollectionView.frame = collectViewFrame;
+    };
+    
+    //
+    // Begin animation.
+    
+    [ResultsCollectionViewCell animateWithDuration:animationDuration
+                          delay:0.0
+                        options:(animationCurve << 16)
+                     animations:animations
+                     completion:nil];
+}
+
 #pragma mark - Interactivity Methods
 
 -(IBAction)showAndHideSearch:(id)sender {
-    [_songSearchView setHidden:!_songSearchView.hidden];
+    //[_songSearchView setHidden:!_songSearchView.hidden];
+    NSLog(@"toggle");
+    if (_menuView.hidden) {
+        [_menuView setHidden:false];
+        [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_menuView setAlpha:1.0];
+            _menuTopConstraint.constant = 0.0;
+            _menuCollectConstraint.constant = 0;
+            [self.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            //
+        }];
+    } else {
+        [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_menuView setAlpha:0.0];
+            _menuTopConstraint.constant = -1 *(_menuView.frame.size.height + self.navigationController.navigationBar.frame.size.height);
+            _menuCollectConstraint.constant = 0-_menuView.frame.size.height;
+            [self.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            [_menuView setHidden:true];
+            [_songSearchBar resignFirstResponder];
+        }];
+    }
+}
+
+
+-(IBAction)samplePreview:(UIButton*)playpausebutton {
+
+    CGPoint playSelection = [playpausebutton convertPoint:CGPointZero toView:_ResultsCollectionView];
+    NSIndexPath *indexPath = [_ResultsCollectionView indexPathForItemAtPoint:playSelection];
+    Song *currentSong = _resultsArray[indexPath.row];
+    NSURL *previewsongUrl = [NSURL URLWithString:currentSong.previewUrl];
+    
+    _audioplayer = [[AVPlayer alloc] initWithURL:previewsongUrl];
+    NSLog(@"Cell %li Picked. URL is %@", indexPath.row, previewsongUrl);
+    
+    NSLog(@"Button Title is: %@",[[playpausebutton titleLabel] text]);
+    if ([[[playpausebutton titleLabel] text] isEqualToString:@"Play"]) {
+        NSLog(@"WIll Play");
+        [playpausebutton setTitle:@"Pause" forState:UIControlStateNormal];
+        [_audioplayer play];
+    } else {
+        NSLog(@"WIll Pause");
+        [playpausebutton setTitle:@"Play" forState:UIControlStateNormal];
+        [_audioplayer pause];
+    }
 }
 
 -(IBAction)getFilePressed:(id)sender {
@@ -110,7 +206,7 @@ bool serverAvailable;
 }
 
 -(CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(100.0, 138.0);
+    return CGSizeMake(100.0, 158.0);
 }
 
 #pragma mark - Prepare for Segueue
@@ -238,7 +334,10 @@ bool serverAvailable;
     [wifiReach startNotifier];
     
     _resultsArray = [[NSMutableArray alloc] init];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

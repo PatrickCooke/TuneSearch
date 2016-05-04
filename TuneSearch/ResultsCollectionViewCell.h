@@ -13,5 +13,7 @@
 @property(nonatomic,weak) IBOutlet UIImageView *albumArtImageView;
 @property(nonatomic,weak) IBOutlet UILabel     *TrackLabel;
 @property(nonatomic,weak) IBOutlet UILabel     *ArtistLabel;
+@property(nonatomic,weak) IBOutlet UIButton    *sampleButton;
+
 
 @end

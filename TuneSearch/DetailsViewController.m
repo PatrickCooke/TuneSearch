@@ -31,6 +31,11 @@
 
 @end
 
+CGFloat lastScale;
+CGFloat firstX;
+CGFloat firstY;
+CGFloat lastRotation;
+
 @implementation DetailsViewController
 
 #pragma mark - Interactivity Methods
@@ -92,12 +97,18 @@
 }
 
 -(IBAction)sampleAudioPreview:(id)sender {
-    [_audioplayer play];
+    if ([[[_samplePlayButton titleLabel] text] isEqualToString:@"Play Sample of Song"]) {
+        [_samplePlayButton setTitle:@"Pause Sample of Song" forState:UIControlStateNormal];
+        [_audioplayer play];
+    } else {
+        [_samplePlayButton setTitle:@"Play Sample of Song" forState:UIControlStateNormal];
+        [_audioplayer pause];
+    }
 }
 
--(IBAction)sampleAudioPause:(id)sender {
-    [_audioplayer pause];
-}
+//-(IBAction)sampleAudioPause:(id)sender {
+//    [_audioplayer pause];
+//}
 
 -(IBAction)showArtistUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
     NSLog(@"pressed artist Info - %@",_currentTune.artistInfoURLString);
@@ -110,25 +121,48 @@
     SFSafariViewController *SafairVC = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:_currentTune.trackInfoURLString]];
 [self.navigationController presentViewController:SafairVC animated:true completion:nil];
 }
-//-(IBAction)showArtistUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
-//    NSURL *myURL = [NSURL URLWithString:_currentTune.artistInfoURLString];
-//    if ([[UIApplication sharedApplication] canOpenURL:myURL]) {
-//        NSLog(@"can open - %@",_currentTune.artistInfoURLString);
-//        [[UIApplication sharedApplication] openURL:myURL];
-//    } else {
-//        NSLog(@"can't open - %@",_currentTune.artistInfoURLString);
-//    }
-//}
-//
-//-(IBAction)showTrackUrlPressed:(id)sender {//much more elegant method (over showing website via UIWebView) when showing a website within an app
-//    NSURL *myURL = [NSURL URLWithString:_currentTune.trackInfoURLString];
-//    if ([[UIApplication sharedApplication] canOpenURL:myURL]) {
-//        NSLog(@"can open - %@",_currentTune.trackInfoURLString);
-//        [[UIApplication sharedApplication] openURL:myURL];
-//    } else {
-//        NSLog(@"can't open- %@",_currentTune.trackInfoURLString);
-//    }
-//}
+
+
+#pragma mark - Gesture Methods
+
+
+-(IBAction)imagePinched:(UIPinchGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        lastScale = 1.0;
+    }
+    CGFloat scale = 1.0 - (lastScale - gesture.scale);
+    CGAffineTransform currentTransform = _albumcoverImageView.transform;
+    CGAffineTransform newTransform = CGAffineTransformScale(currentTransform, scale, scale);
+    [_albumcoverImageView setTransform:newTransform];
+    lastScale = gesture.scale;
+}
+
+-(IBAction)imageRotated:(UIRotationGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        lastRotation = 0.0;
+        return;
+    }
+    CGFloat rotation = 0.0 - (lastRotation - gesture.rotation);
+    CGAffineTransform currentTransform = _albumcoverImageView.transform;
+    CGAffineTransform newtransform = CGAffineTransformRotate(currentTransform, rotation);
+    [_albumcoverImageView setTransform:newtransform];
+    lastRotation = gesture.rotation;
+}
+
+-(IBAction)imagePan:(UIPanGestureRecognizer *)gesture {
+    CGPoint translatedPoint = [gesture translationInView:self.view];
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        firstX = _albumcoverImageView.center.x;
+        firstY = _albumcoverImageView.center.y;
+    }
+    translatedPoint = CGPointMake(firstX+translatedPoint.x, firstY+translatedPoint.y);
+    [_albumcoverImageView setCenter:translatedPoint];
+}
+
+-(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+    return true;
+}
+
 
 
 #pragma mark - Life Cycle Methods
@@ -151,6 +185,9 @@
     if ([_currentTune.itemKind isEqualToString: @"feature-movie"]) {
         [_artistInfoButton setUserInteractionEnabled:false];
         [_artistInfoButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_samplePlayButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_samplePauseButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    } else if ([_currentTune.itemKind isEqualToString: @"tv-episode"]){
         [_samplePlayButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         [_samplePauseButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     } else {
