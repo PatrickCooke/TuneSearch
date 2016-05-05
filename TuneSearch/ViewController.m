@@ -46,14 +46,12 @@ bool serverAvailable;
     NSLog(@"keyboard changed");
     NSDictionary *userInfo = aNotification.userInfo;
     
+    
     NSValue *beginFrameValue = userInfo[UIKeyboardDidChangeFrameNotification];
     CGRect keyboardBeginFrame = [self.view convertRect:beginFrameValue.CGRectValue fromView:nil];
     
     NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
     CGRect keyboardEndFrame = [self.view convertRect:endFrameValue.CGRectValue fromView:nil];
-    
-    //
-    // Get keyboard animation.
     
     NSNumber *durationValue = userInfo[UIKeyboardAnimationDurationUserInfoKey];
     NSTimeInterval animationDuration = durationValue.doubleValue;
@@ -64,9 +62,12 @@ bool serverAvailable;
     CGRect tableViewFrame = self.ResultsCollectionView.frame;
     tableViewFrame.size.height = (keyboardBeginFrame.origin.y - tableViewFrame.origin.y);
     self.ResultsCollectionView.frame = tableViewFrame;
+    NSLog(@"keyboard begin %f and keyboard end %f", keyboardBeginFrame.origin.y, keyboardEndFrame.origin.y);
     
-    [UIView animateWithDuration:animationDuration delay:0.0 options:animationCurve animations:^{
-        _bottomCollectConstraint.constant = -1*(keyboardEndFrame.origin.y);
+    [UIView animateWithDuration:animationDuration
+                          delay:0.0
+                          options:animationCurve animations:^{
+        _bottomCollectConstraint.constant  = 1*(736-keyboardEndFrame.origin.y);
     } completion:nil];
 }
 
@@ -332,6 +333,8 @@ bool serverAvailable;
     _resultsArray = [[NSMutableArray alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidChangeFrameNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidHideNotification object:nil];
 }
 
 
