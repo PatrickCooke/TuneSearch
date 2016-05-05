@@ -46,28 +46,23 @@ bool serverAvailable;
     NSLog(@"keyboard changed");
     NSDictionary *userInfo = aNotification.userInfo;
     
-    
-    NSValue *beginFrameValue = userInfo[UIKeyboardDidChangeFrameNotification];
-    CGRect keyboardBeginFrame = [self.view convertRect:beginFrameValue.CGRectValue fromView:nil];
-    
     NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
     CGRect keyboardEndFrame = [self.view convertRect:endFrameValue.CGRectValue fromView:nil];
     
     NSNumber *durationValue = userInfo[UIKeyboardAnimationDurationUserInfoKey];
     NSTimeInterval animationDuration = durationValue.doubleValue;
     
-    NSNumber *curveValue = userInfo[UIKeyboardAnimationCurveUserInfoKey];
-    UIViewAnimationCurve animationCurve = curveValue.intValue;
+    UIViewAnimationOptions aniCurve = (UIViewAnimationOptions)userInfo[UIKeyboardAnimationCurveUserInfoKey];
     
-    CGRect tableViewFrame = self.ResultsCollectionView.frame;
-    tableViewFrame.size.height = (keyboardBeginFrame.origin.y - tableViewFrame.origin.y);
-    self.ResultsCollectionView.frame = tableViewFrame;
-    NSLog(@"keyboard begin %f and keyboard end %f", keyboardBeginFrame.origin.y, keyboardEndFrame.origin.y);
+    NSLog(@"keyboard end %f", keyboardEndFrame.origin.y);
     
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    CGFloat screenHeight = screenRect.size.height;
     [UIView animateWithDuration:animationDuration
                           delay:0.0
-                          options:animationCurve animations:^{
-        _bottomCollectConstraint.constant  = 1*(736-keyboardEndFrame.origin.y);
+                          options:aniCurve animations:^{
+                              
+        _bottomCollectConstraint.constant  = screenHeight-keyboardEndFrame.origin.y;
     } completion:nil];
 }
 
@@ -81,7 +76,7 @@ bool serverAvailable;
         [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [_menuView setAlpha:1.0];
             _menuTopConstraint.constant = 0.0;
-            _menuCollectConstraint.constant = 0;
+            _menuCollectConstraint.constant = _menuView.frame.origin.y + _menuView.frame.size.height;
             [self.view layoutIfNeeded];
         } completion:^(BOOL finished) {
             //
@@ -333,8 +328,6 @@ bool serverAvailable;
     _resultsArray = [[NSMutableArray alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidChangeFrameNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardMoved:) name:UIKeyboardDidHideNotification object:nil];
 }
 
 
